@@ -1,50 +1,224 @@
-# Proyecto-2-Andres-Perez
+# 🧹 Kiva Crowdfunding Loans – Data Cleaning & Preparation with Python
 
-Conclusiones del trabajo realizado en kiva_loans
+Este proyecto se centra en el **procesamiento, limpieza y preparación de datos** utilizando **Python** en un entorno de **notebook (Jupyter / Google Colab)**, aplicando **buenas prácticas de Data Cleaning** sobre un dataset real de **Kiva Crowdfunding**.
 
-- Hemos podido realizar la importación y uso de diferentes librerías para visualización y manejo de datos
-- Hemos podido cargar los datos csv tanto de manera local como desde drive
+El objetivo principal es transformar datos brutos (*raw data*) en un **dataset estructurado, consistente y reproducible**, listo para su posterior análisis o modelado predictivo, documentando de forma clara **cada decisión técnica tomada durante el proceso**.
 
-1- El primer análisis que hemos realizado es que existen columnas con muchos valores nulos, los cuales no aportan información para nuestro estudio, tales como tags, región or partner_id
+---
 
-Después de ver la visualización de los datos faltantes hemos decidido modificar y eliminar las columnas para ello utilizaremos una copia del dataset de original para modificar los datos
+## 🎯 Objetivos del proyecto
 
-Al borrar las columnas el dataset se vuelve mas leíble y fácil de tratar.
+- Comprender la estructura y calidad inicial del dataset.
+- Detectar y gestionar valores nulos, duplicados y tipos incorrectos.
+- Normalizar y transformar variables clave.
+- Crear columnas derivadas con valor analítico.
+- Analizar y documentar outliers.
+- Validar la calidad del dataset final.
+- Exportar un dataset limpio en formato **CSV**.
+- Entregar un notebook reproducible y bien documentado.
 
-2-Una de las cosas mas importantes para la limpieza de datos es tener unos tipos de datos claros, como se observa tanto fecha como otros datos de tipo string vienen como object así que uno de nuestros objetivos será cambiar los tipos de datos a su correspondientes.
+---
 
-3-El siguiente paso será crear una columna dada a una condición, en nuestro caso será si el préstamo fue desembolsado antes o después de la fecha de publicación.
+## 📊 Dataset utilizado
 
-# Creo una columna con la condicion, si se da le dará el valor pre-disbursed y sino post_disbursed
+- **Nombre:** Data Science for Good – Kiva Crowdfunding  
+- **Fuente:** Kaggle  
+- **Link:** https://www.kaggle.com/datasets/kiva/data-science-for-good-kiva-crowdfunding  
+- **Organización:** Kiva.org  
+
+Dataset que contiene información sobre **préstamos de microfinanciación** otorgados a nivel global, incluyendo montos, países, sectores, prestamistas, fechas y estado del desembolso.
+
+---
+
+## 🧰 Tecnologías utilizadas
+
+- **Python 3**
+- **Google Colab / Jupyter Notebook**
+- **Librerías**
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+- **Control de versiones:** Git & GitHub
+- **Formato de exportación:** CSV
+
+---
+
+## 🧭 Estructura del Notebook
+
+1. Importación del dataset (local y Google Drive)
+2. Exploración inicial
+   - Dimensiones (shape)
+   - Tipos de datos
+   - Resumen estadístico
+3. Diagnóstico de calidad de datos
+   - Valores nulos
+   - Duplicados
+   - Formatos incorrectos
+4. Limpieza y transformaciones
+5. Creación de variables derivadas
+6. Análisis visual exploratorio
+7. Estudio de outliers
+8. Validación post-limpieza
+9. Exportación del dataset limpio
+
+---
+
+## 🔍 Proceso de limpieza y transformación
+
+### 1️⃣ Eliminación de columnas con alto porcentaje de nulos
+
+Durante la exploración inicial se identificaron columnas con muchos valores faltantes y bajo valor analítico para el estudio:
+
+- tags  
+- region  
+- partner_id  
+
+Estas columnas fueron eliminadas trabajando siempre sobre una **copia del dataset original**, preservando el raw data.
+
+**Resultado:** dataset más limpio, legible y fácil de mantener.
+
+---
+
+### 2️⃣ Corrección de tipos de datos
+
+Se detectó que varias columnas importantes, incluyendo fechas y valores numéricos, estaban almacenadas como tipo `object`.
+
+Acciones realizadas:
+- Conversión de columnas de fecha a tipo `datetime`
+- Conversión de columnas numéricas a `int` o `float`
+
+Este paso es fundamental para asegurar análisis, comparaciones y visualizaciones correctas.
+
+---
+
+### 3️⃣ Creación de columnas derivadas
+
+#### 🔹 Tipo de préstamo según fecha de desembolso
+
+Se creó la columna `loan_type` para clasificar los préstamos según el momento del desembolso:
+
+```python
 kiva_loans_df["loan_type"] = np.where(
-    kiva_loans_df["disbursed_time"] < kiva_loans_df['posted_time'],
+    kiva_loans_df["disbursed_time"] < kiva_loans_df["posted_time"],
     "pre_disbursed",
     "post_disbursed"
 )
+Esto permite analizar diferencias entre préstamos **pre_disbursed** y **post_disbursed**, aportando contexto temporal al estado del préstamo.
 
-4- Creamos una nueva columna loan_amount que tendrá el valor micro, small, medium y large, dependiendo de los rangos que hemos establecidos
+---
 
-Para saber que todo está correcto poder utilizar histogramas y diferentes tipos de gráficos para mostrar los datos como por ejemplo:
-- histograma - visualización clara que la mayor cantidad de loan amount <2500
+### 🔹 Categorización del monto del préstamo
 
-- gráfico de barras - visualización de diferentes distribuciones por loan amount/funded_amount/Months/Lender Count
-  Visualización de datos discretos y agrupaciones como por ejemplo ver los 10 países con el sum(funded_amount)(el que más philippines)
-  Otro ejemplo que hemos hecho ha sido préstamos por sector(predominando agricultura, food, retail)
-  O dividir los datos en dos grupos post_disbursed y pre_disbursed, siendo post_disbursed el que mas predomina
+Se creó la columna `loan_amount_category`, segmentando el monto del préstamo en:
 
-- gráfico de líneas
-  Creación de una nueva columna month para poder hacer una agrupación de loan_amount(media) por mes
-  En la gráfica se puede observar que hay picos en enero, puede ser debido a que la gente es mas generosa o se incita mas a donar en estas               fechas, habiendo bajadas en el resto de meses y una bajada drástica en 2017 cosa que puede ser digna de estudio exhaustivo para ver que pasó
+- **Micro**
+- **Small**
+- **Medium**
+- **Large**
 
-- piechart gráfico circular, viendo la proporción de préstamos por país, en este caso el top 8. Muy importante para ver el % de cada país al total
+Esta categorización facilita el análisis de distribuciones, comparaciones y patrones por tamaño de préstamo.
 
-5- Por último hemos utilizado choropleth map para poder manejar los datos y verlos en un mapa. Viendo de forma visual cada país y la cantidad de loan que han recibido.
+---
 
-6- Hemos realizado el estudio de outliners, dividiendo nuestra información en q y iqr, realizando gráficos de densidad para visualización de los datos.
+### 4️⃣ Análisis visual exploratorio
 
-micro- cantidad mas prestada entorno a 250
-small - densidad mas común entre 500-1000, teniendo una descendencia progresiva hasta 2500
-médium - densidad mas común entre 2000-3000, bajando gradualmente hasta 6000, apartir de esa cifra baja significativamente la cantidad
-large - densidad mas común entorno a 10000, con muy pocas cantidades superiores a esta, viéndose un pico en 50000
+Se utilizaron distintos tipos de visualizaciones según el objetivo analítico:
 
-Por último hemos podido exportar el nuevo archivo csv tanto en drive como en local.
+#### 📊 Histogramas
+- Mayor concentración de préstamos con monto inferior a **2.500**
+
+#### 📊 Gráficos de barras
+- Top países por `funded_amount` (destaca **Filipinas**)
+- Distribución por sector (**Agriculture**, **Food**, **Retail**)
+- Comparación entre préstamos **pre_disbursed** y **post_disbursed**
+
+#### 📈 Gráficos de líneas
+- Evolución mensual del monto medio del préstamo
+- Picos claros en **enero**
+- Descenso marcado en **2017**, posible línea de investigación futura
+
+#### 🥧 Gráficos circulares
+- Proporción de préstamos por país (**Top 8**)
+
+---
+
+### 5️⃣ Visualización geográfica
+
+Se implementó un **choropleth map** para representar visualmente:
+
+- Países
+- Cantidad total de préstamos recibidos
+
+Este enfoque facilita la comprensión del impacto geográfico y social de **Kiva**.
+
+---
+
+### 6️⃣ Análisis de outliers
+
+Se realizó un análisis de valores atípicos utilizando:
+
+- Cuartiles (**Q1**, **Q3**)
+- Rango intercuartílico (**IQR**)
+- Gráficos de densidad
+
+#### 🔎 Resultados observados
+
+- **Micro:** mayor densidad alrededor de **250**
+- **Small:** concentración entre **500 y 1.000**
+- **Medium:** densidad entre **2.000 y 3.000**, decreciendo hasta **6.000**
+- **Large:** pico alrededor de **10.000**, con valores extremos cercanos a **50.000**
+
+Las decisiones de conservación o exclusión de outliers fueron **documentadas y justificadas**.
+
+---
+
+### ✅ Validación post-limpieza
+
+Se realizaron comprobaciones finales para asegurar la calidad del dataset:
+
+- Conteos esperados
+- Ausencia de nulos en columnas clave
+- Coherencia de tipos de datos
+- Revisión de muestras aleatorias
+
+---
+
+### 📤 Exportación del dataset limpio
+
+El dataset final fue exportado:
+
+- En formato **CSV**
+- Tanto en **Google Drive** como en entorno local
+
+Quedando listo para análisis posterior o modelado predictivo.
+
+---
+
+### 🧠 Conclusiones
+
+- La limpieza de datos es un proceso crítico y estructurado
+- Documentar cada decisión mejora la reproducibilidad
+- La visualización ayuda a validar transformaciones
+- El dataset final es consistente, legible y reutilizable
+- Se aplicaron buenas prácticas de **Data Wrangling profesional**
+
+---
+
+### 🚀 Próximos pasos
+
+- Exportar una versión en formato **Parquet**
+- Automatizar el pipeline de limpieza
+- Feature engineering avanzado
+- Modelos predictivos sobre probabilidad de financiación
+
+---
+
+### 📌 Nota final
+
+Este proyecto refleja un flujo de trabajo realista de un **Data Analyst**, poniendo énfasis en:
+
+- Calidad de datos
+- Reproducibilidad
+- Trazabilidad
+- Buen criterio técnico y analítico
