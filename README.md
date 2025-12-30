@@ -98,7 +98,8 @@ Este paso es fundamental para asegurar análisis, comparaciones y visualizacione
 
 Se creó la columna `loan_type` para clasificar los préstamos según el momento del desembolso:
 
-```python
+python
+
 kiva_loans_df["loan_type"] = np.where(
     kiva_loans_df["disbursed_time"] < kiva_loans_df["posted_time"],
     "pre_disbursed",
